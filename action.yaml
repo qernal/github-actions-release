@@ -1,0 +1,42 @@
+name: 'qs-github-release'
+description: 'GitHub Release Package'
+author: 'Qernal (https://qernal.com/)'
+branding:
+  icon: download
+  color: purple
+
+inputs:
+  tag:
+    description: Tag to create for this release (usually the version)
+    required: true
+  tag_pattern:
+    description: The pattern of the tag to use
+    required: true
+  release_name:
+    description: Name of this release
+    required: false
+  release_description:
+    description: Release description
+    required: false
+  prerelease:
+    description: Set the release to be a prelease type (non-stable release)
+    required: false
+  assets:
+    description: List of assets to release
+    required: true
+  archive:
+    description: Archive the assets
+    required: false
+  auto_increment:
+    description: Auto increment the semver on the last tag found
+    required: false
+  owner:
+    description: GitHub user who owns this release
+    required: false
+  dry_run:
+    description: Dry run the release, useful for non-release branches
+    required: false
+
+runs:
+  using: 'docker'
+  image: 'docker://ghcr.io/qernal/gh-actions/github-release-x86_64:v1'
