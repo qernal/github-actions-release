@@ -11,7 +11,7 @@ inputs:
     required: true
   tag_pattern:
     description: The pattern of the tag to use
-    required: true
+    required: false
   release_name:
     description: Name of this release
     required: false
@@ -21,17 +21,14 @@ inputs:
   prerelease:
     description: Set the release to be a prelease type (non-stable release)
     required: false
+  repo_name:
+    description: Name of the repository to create release on
+    required: true
   assets:
     description: List of assets to release
     required: true
-  archive:
-    description: Archive the assets
-    required: false
   auto_increment:
     description: Auto increment the semver on the last tag found
-    required: false
-  owner:
-    description: GitHub user who owns this release
     required: false
   dry_run:
     description: Dry run the release, useful for non-release branches

@@ -2,6 +2,7 @@ on:
   push:
     branches:
       - main
+      - develop
 
 jobs:
   build:
@@ -9,14 +10,19 @@ jobs:
     name: Build gh-actions-release
     steps:
       - uses: actions/checkout@v2
+      - name: Get commit details
+        run: |
+          export branch_name=${GITHUB_REF##*/}
+          echo "branch_name=${branch_name,,}" >> $GITHUB_ENV
+          echo "commit_sha_short=$(git rev-parse --short "$GITHUB_SHA") >> $GITHUB_ENV"
       - name: Build image
         shell: bash
         run: |
-          docker build -t ghcr.io/qernal/gh-actions/release-x86_64:latest -f ./Dockerfile ./
+          docker build -t ghcr.io/qernal/gh-actions/release-x86_64:${{ env.branch_name }} -f ./Dockerfile ./
       - name: Push image
         shell: bash
         run: |
           echo ${{ secrets.GH_PAT }} | docker login ghcr.io --username qernal --password-stdin
-          docker push ghcr.io/qernal/gh-actions/release-x86_64:latest
+          docker push ghcr.io/qernal/gh-actions/release-x86_64:${{ env.branch_name }}
 # TODO: add testing of the container and output
 
