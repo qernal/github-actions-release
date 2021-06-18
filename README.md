@@ -28,7 +28,7 @@ jobs:
 ## Action parameters
 
 | Parameter | Description | Default | Required | Values |
-| ---- | ---- | ---- | ---- |
+| ---- | ---- | ---- | ---- | ---- |
 | `tag` | Tag to use, can be initial tag if `tag_pattern` is set | _no default_ | Y | String |
 | `tag_pattern` | A regular expression of the pattern to use, e.g. `abc_v(?P<semver>([0-9]+)\.([0-9]+)\.([0-9]+))` - the pattern *must* include a `semver` group that matches a semantic versioning pattern otherwise the replacement will fail | _no default_ | N | String |
 | `release_name` | Name of the release | _no default_ | N | String |
