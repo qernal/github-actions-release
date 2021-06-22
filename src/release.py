@@ -38,8 +38,8 @@ class release:
         if self.config['arg_prerelease'] == None:
             return False
 
-        if self.config['arg_prerelease'].len() > 0 and self.config['arg_prerelease'].lower() == "true":
-                return True
+        if len(self.config['arg_prerelease']) > 0 and self.config['arg_prerelease'].lower() == "true":
+            return True
 
         return False
 
@@ -49,7 +49,7 @@ class release:
         if name == None:
             name = tag
         else:
-            if name.len() < 1:
+            if len(name) < 1:
                 name = tag
 
         # redefine to a blank message, None is not accepted
