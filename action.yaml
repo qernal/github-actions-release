@@ -33,6 +33,9 @@ inputs:
   dry_run:
     description: Dry run the release, useful for non-release branches
     required: false
+  token:
+    description: GitHub PAT Token to access/create release
+    required: true
 
 runs:
   using: 'docker'

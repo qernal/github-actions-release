@@ -12,6 +12,7 @@ class release:
     gh = None
     config = dict()
     release = dict()
+    workspace = "/github/workspace/"
 
     # validate if the config has a length
     def validate_config(self, name: str, value: str):
@@ -88,7 +89,7 @@ class release:
         asset_list = assets.split(',')
 
         for asset in asset_list:
-            if(os.path.exists(asset) == False):
+            if(os.path.exists(self.workspace + asset) == False):
                 self.output("error", f"Unable to find asset on disk; {asset}")
 
             self.output("debug", f"Found asset {asset} on disk")
@@ -119,12 +120,12 @@ class release:
 
         # upload asset
         for asset in asset_list:
-            if os.path.isdir(asset):
+            if os.path.isdir(self.workspace + asset):
                 # generate archive for directories
-                of = self.generate_archive(asset, asset)
+                of = self.generate_archive(self.workspace + asset, asset)
                 asset = of
 
-            release.upload_asset(asset)
+            release.upload_asset(self.workspace + asset)
 
     # loop through all releases and match the pattern (in desc order)
     def get_latest_release(self, repo_name: str, tag_pattern: str):
