@@ -25,7 +25,7 @@ jobs:
       - uses: qernal/github-actions-release@v1.0
 ```
 
-## Action parameters
+### Action parameters
 
 | Parameter | Description | Default | Required | Values |
 | ---- | ---- | ---- | ---- | ---- |
@@ -48,9 +48,15 @@ Example;
       - uses: qernal/github-actions-rust-release@v1.0
         with:
           tag: "abc_v1.0.0"
-          tag_pattern: "abc_v(?P<semver>([0-9]+)\.([0-9]+)\.([0-9]+))"
+          tag_pattern: 'abc_v(?P<semver>([0-9]+)\.([0-9]+)\.([0-9]+))'
           token: "${{ secrets.github_token }}"
 ```
+
+### Action output
+
+| Output | Description |
+| ---- | ---- |
+| `tag` | Tag that was created during the release |
 
 ## Manual runs
 

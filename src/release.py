@@ -19,12 +19,16 @@ class release:
         if(value != None and len(value) > 0):
             return True
         else:
-            self.output("error", "Missing field; " + name)
+            self.workflow("error", "Missing field; " + name)
             return False
+
+    # output of
+    def output(self, name: str, value: str):
+        print(f"::set-output name={name}::{value}")
 
     # github action formatted output
     # TODO: config to disable debug mode
-    def output(self, type: str, message: str):
+    def workflow(self, type: str, message: str):
         if(type == "debug" or type == "warning" or type == "error"):
             print(f"::{type}::{message}")
 
@@ -58,6 +62,7 @@ class release:
 
         repo = self.gh.get_repo(repo_name)
         release = repo.create_git_release(tag, name, message, False, prerelease)
+        self.output("tag", tag)
 
         return release
 
@@ -72,16 +77,16 @@ class release:
     # increment the tag
     # TODO: validate the semver check with semver valid
     def increment(self, tag: str, increment_type: str) -> str:
-        self.output("debug", "tag; " + tag)
+        self.workflow("debug", "tag; " + tag)
 
         matches = re.search(self.config['arg_tag_pattern'], tag)
-        self.output('debug', "group-dict;" + matches['semver'])
+        self.workflow('debug', "group-dict;" + matches['semver'])
 
         # TODO: handle regex replacement errors
         raw_ver = str(semver.VersionInfo.parse(matches['semver']).next_version(increment_type))
         ver = re.sub(self.config['arg_tag_pattern'], partial(self._regex_replace_closure, "semver", raw_ver), tag)
 
-        self.output("debug", "final version; " + ver)
+        self.workflow("debug", "final version; " + ver)
         return ver
 
     # validate all the defined assets are on disk
@@ -90,9 +95,9 @@ class release:
 
         for asset in asset_list:
             if(os.path.exists(self.workspace + asset) == False):
-                self.output("error", f"Unable to find asset on disk; {asset}")
+                self.workflow("error", f"Unable to find asset on disk; {asset}")
 
-            self.output("debug", f"Found asset {asset} on disk")
+            self.workflow("debug", f"Found asset {asset} on disk")
 
     # split assets or return singular as dict
     def split_assets(self, assets: str) -> dict:
@@ -142,7 +147,7 @@ class release:
         # if auto increment is set, get last release
         if self.config['arg_auto_increment'] != None:
             latest = self.get_latest_release(self.config['arg_repo_name'], self.config['arg_tag_pattern'])
-            self.output("debug", latest)
+            self.workflow("debug", latest)
 
             if latest == None:
                 # no current release, use the tag
@@ -181,7 +186,7 @@ class release:
         if (not self.validate_config("tag", self.config['arg_tag']) and
             not self.validate_config("assets", self.config['arg_assets']) and
             not self.validate_config("repo name", self.config['arg_repo_name'])):
-            self.output("error", "Missing required fields")
+            self.workflow("error", "Missing required fields")
             exit(1)
 
         # make sure tag pattern was supplied
@@ -190,7 +195,7 @@ class release:
                 re_pattern = self.config['arg_tag_pattern']
                 re.compile(f'{re_pattern}')
             except re.error:
-                self.output("error", "invalid tag pattern regex")
+                self.workflow("error", "invalid tag pattern regex")
                 exit(1)
 
         # validate the assets
