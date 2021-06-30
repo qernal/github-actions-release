@@ -36,6 +36,9 @@ inputs:
   token:
     description: GitHub PAT Token to access/create release
     required: true
+outputs:
+  tag:
+    description: Tag that was created during the release
 
 runs:
   using: 'docker'
