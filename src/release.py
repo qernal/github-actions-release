@@ -144,6 +144,16 @@ class release:
 
     # main logic
     def run(self):
+        # if we're only getting last release, grab it and quit
+        if self.config['arg_get_last_tag'] != None:
+            latest = self.get_latest_release(self.config['arg_repo_name'], self.config['arg_tag_pattern'])
+
+            if latest == None:
+                self.output("tag", latest)
+
+            print("-- Release skipped, output was last tag")
+            return
+
         # if auto increment is set, get last release
         if self.config['arg_auto_increment'] != None:
             latest = self.get_latest_release(self.config['arg_repo_name'], self.config['arg_tag_pattern'])
@@ -181,6 +191,7 @@ class release:
         self.config['arg_assets'] = os.environ.get('INPUT_ASSETS')
         self.config['arg_auto_increment'] = os.environ.get('INPUT_AUTO_INCREMENT')
         self.config['arg_repo_name'] = os.environ.get('INPUT_REPO_NAME')
+        self.config['arg_get_last_tag'] = os.environ.get('INPUT_GET_LAST_TAG')
 
         # validate required config
         if (not self.validate_config("tag", self.config['arg_tag']) and
