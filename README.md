@@ -38,7 +38,8 @@ jobs:
 | `auto_increment` | Auto increment | _no default_ | N | String, values are; `major`, `minor`, `patch` |
 | `repo_name` | Name of the repository to create release on | Y | String |
 | `token` | GitHub PAT Token to access/create release | _no default_ | Y | String |
-| `dry_run` | _not yet implemeneted_ | False | N | Boolean |
+| `dry_run` | _not yet implemented_ | False | N | Boolean |
+| `get_last_tag` | Gets the last tag that was created, doesn't create or update the release - this is for information | False | N | Boolean |
 
 Example;
 
@@ -56,7 +57,7 @@ Example;
 
 | Output | Description |
 | ---- | ---- |
-| `tag` | Tag that was created during the release |
+| `tag` | Tag that was created or acquired during the release |
 
 ## Manual runs
 
