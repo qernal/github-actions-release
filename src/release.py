@@ -148,8 +148,11 @@ class release:
         if self.config['arg_get_last_tag'] != None:
             latest = self.get_latest_release(self.config['arg_repo_name'], self.config['arg_tag_pattern'])
 
-            if latest == None:
+            if latest != None:
                 self.output("tag", latest)
+            else:
+                # tag not found, throw error
+                self.workflow("error", "Unable to find tag")
 
             print("-- Release skipped, output was last tag")
             return
