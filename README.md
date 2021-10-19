@@ -8,6 +8,7 @@ Github action to run release packages against a repository, this provides releas
 - Auto increment semver (with pattern matching on existing release naming)
 - Mark as pre-release
 - Dry run without release (for testing releases via non-release branches)
+- Fetch the latest release tag for an asset
 
 ## Workflow configuration
 
@@ -46,7 +47,7 @@ Example;
 ```yaml
     steps:
       - uses: actions/checkout@v2
-      - uses: qernal/github-actions-rust-release@v1.0
+      - uses: qernal/github-actions-rust-release@v1.0.6
         with:
           tag: "abc_v1.0.0"
           tag_pattern: 'abc_v(?P<semver>([0-9]+)\.([0-9]+)\.([0-9]+))'
