@@ -142,10 +142,14 @@ class release:
 
         return None
 
+    # determine if string is empty, for config items
+    def is_empty(self, string: str) -> bool:
+        return not (string and string.strip())
+
     # main logic
     def run(self):
         # if we're only getting last release, grab it and quit
-        if self.config['arg_get_last_tag'] != None:
+        if self.config['arg_get_last_tag'] != None and not self.is_empty(self.config['arg_get_last_tag']):
             latest = self.get_latest_release(self.config['arg_repo_name'], self.config['arg_tag_pattern'])
 
             if latest != None:
@@ -158,7 +162,7 @@ class release:
             return
 
         # if auto increment is set, get last release
-        if self.config['arg_auto_increment'] != None:
+        if self.config['arg_auto_increment'] != None and not self.is_empty(self.config['arg_auto_increment']):
             latest = self.get_latest_release(self.config['arg_repo_name'], self.config['arg_tag_pattern'])
             self.workflow("debug", latest)
 
@@ -182,19 +186,27 @@ class release:
         print("-- Release created")
 
     def __init__(self):
-        # inputs
+        # static basedir for github action container
         self.config['base_dir'] = '/github/workspace'
 
-        # config
-        self.config['arg_tag'] = os.environ.get('INPUT_TAG')
-        self.config['arg_tag_pattern'] = os.environ.get('INPUT_TAG_PATTERN')
-        self.config['arg_release_name'] = os.environ.get('INPUT_RELEASE_NAME')
-        self.config['arg_release_desc'] = os.environ.get('INPUT_RELEASE_DESCRIPTION')
-        self.config['arg_prerelease'] = os.environ.get('INPUT_PRERELEASE')
-        self.config['arg_assets'] = os.environ.get('INPUT_ASSETS')
-        self.config['arg_auto_increment'] = os.environ.get('INPUT_AUTO_INCREMENT')
-        self.config['arg_repo_name'] = os.environ.get('INPUT_REPO_NAME')
-        self.config['arg_get_last_tag'] = os.environ.get('INPUT_GET_LAST_TAG')
+        # config map
+        config = {
+            'arg_tag': 'INPUT_TAG',
+            'arg_tag_pattern': 'INPUT_TAG_PATTERN',
+            'arg_release_name': 'INPUT_RELEASE_NAME',
+            'arg_release_desc': 'INPUT_RELEASE_DESCRIPTION',
+            'arg_prerelease': 'INPUT_PRERELEASE',
+            'arg_assets': 'INPUT_ASSETS',
+            'arg_auto_increment': 'INPUT_AUTO_INCREMENT',
+            'arg_repo_name': 'INPUT_REPO_NAME',
+            'arg_get_last_tag': 'INPUT_GET_LAST_TAG'
+        }
+
+        for c_key, c_value in config.items():
+            value = os.environ.get(c_value)
+
+            if not self.is_empty(value):
+                self.config[c_key] = value
 
         # validate required config
         if (not self.validate_config("tag", self.config['arg_tag']) and
