@@ -22,7 +22,14 @@ class release:
             self.workflow("error", "Missing field; " + name)
             return False
 
-    # output of
+    # get config item
+    def get_config(self, name: str):
+        if name in self.config:
+            return self.config[name]
+        else:
+            return None
+
+    # output for action workflow
     def output(self, name: str, value: str):
         print(f"::set-output name={name}::{value}")
 
@@ -149,7 +156,7 @@ class release:
     # main logic
     def run(self):
         # if we're only getting last release, grab it and quit
-        if self.config['arg_get_last_tag'] != None and not self.is_empty(self.config['arg_get_last_tag']):
+        if self.get_config('arg_get_last_tag') != None:
             latest = self.get_latest_release(self.config['arg_repo_name'], self.config['arg_tag_pattern'])
 
             if latest != None:
@@ -162,7 +169,7 @@ class release:
             return
 
         # if auto increment is set, get last release
-        if self.config['arg_auto_increment'] != None and not self.is_empty(self.config['arg_auto_increment']):
+        if self.get_config('arg_auto_increment') != None:
             latest = self.get_latest_release(self.config['arg_repo_name'], self.config['arg_tag_pattern'])
             self.workflow("debug", latest)
 
