@@ -47,7 +47,7 @@ Example;
 ```yaml
     steps:
       - uses: actions/checkout@v2
-      - uses: qernal/github-actions-rust-release@v1.0.6
+      - uses: qernal/github-actions-rust-release@v1.0.7
         with:
           tag: "abc_v1.0.0"
           tag_pattern: 'abc_v(?P<semver>([0-9]+)\.([0-9]+)\.([0-9]+))'

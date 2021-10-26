@@ -12,7 +12,6 @@ class release:
     gh = None
     config = dict()
     release = dict()
-    workspace = "/github/workspace/"
 
     # validate if the config has a length
     def validate_config(self, name: str, value: str):
@@ -22,7 +21,14 @@ class release:
             self.workflow("error", "Missing field; " + name)
             return False
 
-    # output of
+    # get config item
+    def get_config(self, name: str):
+        if name in self.config:
+            return self.config[name]
+        else:
+            return None
+
+    # output for action workflow
     def output(self, name: str, value: str):
         print(f"::set-output name={name}::{value}")
 
@@ -39,10 +45,10 @@ class release:
 
     # is pre-release
     def is_prerelease(self):
-        if self.config['arg_prerelease'] == None:
+        if self.get_config('arg_prerelease') == None:
             return False
 
-        if len(self.config['arg_prerelease']) > 0 and self.config['arg_prerelease'].lower() == "true":
+        if len(self.get_config('arg_prerelease')) > 0 and self.get_config('arg_prerelease').lower() == "true":
             return True
 
         return False
@@ -79,12 +85,12 @@ class release:
     def increment(self, tag: str, increment_type: str) -> str:
         self.workflow("debug", "tag; " + tag)
 
-        matches = re.search(self.config['arg_tag_pattern'], tag)
+        matches = re.search(self.get_config('arg_tag_pattern'), tag)
         self.workflow('debug', "group-dict;" + matches['semver'])
 
         # TODO: handle regex replacement errors
         raw_ver = str(semver.VersionInfo.parse(matches['semver']).next_version(increment_type))
-        ver = re.sub(self.config['arg_tag_pattern'], partial(self._regex_replace_closure, "semver", raw_ver), tag)
+        ver = re.sub(self.get_config('arg_tag_pattern'), partial(self._regex_replace_closure, "semver", raw_ver), tag)
 
         self.workflow("debug", "final version; " + ver)
         return ver
@@ -94,7 +100,7 @@ class release:
         asset_list = assets.split(',')
 
         for asset in asset_list:
-            if(os.path.exists(self.workspace + asset) == False):
+            if(os.path.exists(self.get_config('base_dir') + asset) == False):
                 self.workflow("error", f"Unable to find asset on disk; {asset}")
 
             self.workflow("debug", f"Found asset {asset} on disk")
@@ -125,12 +131,12 @@ class release:
 
         # upload asset
         for asset in asset_list:
-            if os.path.isdir(self.workspace + asset):
+            if os.path.isdir(self.get_config('base_dir') + asset):
                 # generate archive for directories
-                of = self.generate_archive(self.workspace + asset, asset)
+                of = self.generate_archive(self.get_config('base_dir') + asset, asset)
                 asset = of
 
-            release.upload_asset(self.workspace + asset)
+            release.upload_asset(self.get_config('base_dir') + asset)
 
     # loop through all releases and match the pattern (in desc order)
     def get_latest_release(self, repo_name: str, tag_pattern: str):
@@ -142,11 +148,15 @@ class release:
 
         return None
 
+    # determine if string is empty, for config items
+    def is_empty(self, string: str) -> bool:
+        return not (string and string.strip())
+
     # main logic
     def run(self):
         # if we're only getting last release, grab it and quit
-        if self.config['arg_get_last_tag'] != None:
-            latest = self.get_latest_release(self.config['arg_repo_name'], self.config['arg_tag_pattern'])
+        if self.get_config('arg_get_last_tag') != None:
+            latest = self.get_latest_release(self.get_config('arg_repo_name'), self.get_config('arg_tag_pattern'))
 
             if latest != None:
                 self.output("tag", latest)
@@ -158,62 +168,71 @@ class release:
             return
 
         # if auto increment is set, get last release
-        if self.config['arg_auto_increment'] != None:
-            latest = self.get_latest_release(self.config['arg_repo_name'], self.config['arg_tag_pattern'])
+        if self.get_config('arg_auto_increment') != None:
+            latest = self.get_latest_release(self.get_config('arg_repo_name'), self.get_config('arg_tag_pattern'))
             self.workflow("debug", latest)
 
             if latest == None:
                 # no current release, use the tag
-                self.release['tag'] = self.config['arg_tag']
+                self.release['tag'] = self.get_config('arg_tag')
             else:
                 self.release['tag'] = self.increment(latest, "patch")
                 # TODO: validate the output of increment against supplied pattern
                 # self.config['arg_tag_pattern']
         else:
             # don't auto increment, just create release
-            self.release['tag'] = self.config['arg_tag']
+            self.release['tag'] = self.get_config('arg_tag')
 
         # create release
-        release = self.create_release(self.config['arg_repo_name'], self.release['tag'], self.config['arg_release_name'], self.config['arg_release_desc'], self.is_prerelease())
+        release = self.create_release(self.get_config('arg_repo_name'), self.release['tag'], self.get_config('arg_release_name'), self.get_config('arg_release_desc'), self.is_prerelease())
 
         # upload assets
-        self.upload_assets(self.config['arg_repo_name'], release, self.config['arg_assets'])
+        self.upload_assets(self.get_config('arg_repo_name'), release, self.get_config('arg_assets'))
 
         print("-- Release created")
 
     def __init__(self):
-        # inputs
+        # static basedir for github action container
         self.config['base_dir'] = '/github/workspace'
 
-        # config
-        self.config['arg_tag'] = os.environ.get('INPUT_TAG')
-        self.config['arg_tag_pattern'] = os.environ.get('INPUT_TAG_PATTERN')
-        self.config['arg_release_name'] = os.environ.get('INPUT_RELEASE_NAME')
-        self.config['arg_release_desc'] = os.environ.get('INPUT_RELEASE_DESCRIPTION')
-        self.config['arg_prerelease'] = os.environ.get('INPUT_PRERELEASE')
-        self.config['arg_assets'] = os.environ.get('INPUT_ASSETS')
-        self.config['arg_auto_increment'] = os.environ.get('INPUT_AUTO_INCREMENT')
-        self.config['arg_repo_name'] = os.environ.get('INPUT_REPO_NAME')
-        self.config['arg_get_last_tag'] = os.environ.get('INPUT_GET_LAST_TAG')
+        # config map
+        config = {
+            'arg_tag': 'INPUT_TAG',
+            'arg_tag_pattern': 'INPUT_TAG_PATTERN',
+            'arg_release_name': 'INPUT_RELEASE_NAME',
+            'arg_release_desc': 'INPUT_RELEASE_DESCRIPTION',
+            'arg_prerelease': 'INPUT_PRERELEASE',
+            'arg_assets': 'INPUT_ASSETS',
+            'arg_auto_increment': 'INPUT_AUTO_INCREMENT',
+            'arg_repo_name': 'INPUT_REPO_NAME',
+            'arg_get_last_tag': 'INPUT_GET_LAST_TAG',
+            'base_dir': 'INPUT_BASE_DIR'
+        }
 
+        for c_key, c_value in config.items():
+            value = os.environ.get(c_value)
+
+            if not self.is_empty(value):
+                self.config[c_key] = value
+        print(self.config)
         # validate required config
-        if (not self.validate_config("tag", self.config['arg_tag']) and
-            not self.validate_config("assets", self.config['arg_assets']) and
-            not self.validate_config("repo name", self.config['arg_repo_name'])):
+        if (not self.validate_config("tag", self.get_config('arg_tag')) and
+            not self.validate_config("assets", self.get_config('arg_assets')) and
+            not self.validate_config("repo name", self.get_config('arg_repo_name'))):
             self.workflow("error", "Missing required fields")
             exit(1)
 
         # make sure tag pattern was supplied
-        if self.validate_config("tag pattern", self.config['arg_tag_pattern']):
+        if self.validate_config("tag pattern", self.get_config('arg_tag_pattern')):
             try:
-                re_pattern = self.config['arg_tag_pattern']
+                re_pattern = self.get_config('arg_tag_pattern')
                 re.compile(f'{re_pattern}')
             except re.error:
                 self.workflow("error", "invalid tag pattern regex")
                 exit(1)
 
         # validate the assets
-        self.validate_assets(self.config['arg_assets'])
+        self.validate_assets(self.get_config('arg_assets'))
 
         # connect to github
         self.gh = Github(os.environ.get('INPUT_TOKEN'))
