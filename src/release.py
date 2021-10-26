@@ -193,7 +193,7 @@ class release:
 
     def __init__(self):
         # static basedir for github action container
-        self.config['base_dir'] = '/github/workspace'
+        self.config['base_dir'] = '/github/workspace/'
 
         # config map
         config = {
@@ -214,7 +214,7 @@ class release:
 
             if not self.is_empty(value):
                 self.config[c_key] = value
-        print(self.config)
+
         # validate required config
         if (not self.validate_config("tag", self.get_config('arg_tag')) and
             not self.validate_config("assets", self.get_config('arg_assets')) and
