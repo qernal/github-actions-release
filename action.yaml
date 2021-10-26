@@ -45,4 +45,4 @@ outputs:
 
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/qernal/gh-actions/release-x86_64:v1.0.6'
+  image: 'docker://ghcr.io/qernal/gh-actions/release-x86_64:v1.0.7'
