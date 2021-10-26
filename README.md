@@ -23,7 +23,7 @@ jobs:
     name: Lint package
     steps:
       - uses: actions/checkout@v2
-      - uses: qernal/github-actions-release@v1.0
+      - uses: qernal/github-actions-release@v1.0.8
 ```
 
 ### Action parameters
@@ -47,7 +47,7 @@ Example;
 ```yaml
     steps:
       - uses: actions/checkout@v2
-      - uses: qernal/github-actions-rust-release@v1.0.7
+      - uses: qernal/github-actions-rust-release@v1.0.8
         with:
           tag: "abc_v1.0.0"
           tag_pattern: 'abc_v(?P<semver>([0-9]+)\.([0-9]+)\.([0-9]+))'
